@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N4 Ticket Desk</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+
+    <div id="auth-container">
+        <div class="auth-box" id="login-form">
+            <h2 class="text-xl" style="margin-bottom: 1.5rem; text-align: center;">Login to N4 Desk</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label class="label">Email Address</label>
+                    <input type="email" class="input" name="email" required placeholder="name@company.com">
+                </div>
+                <div class="input-group">
+                    <label class="label">Password</label>
+                    <input type="password" class="input" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+            <p class="mt-4 text-center text-sm text-secondary">
+                Don't have an account? <a href="#" onclick="showRegister()" style="color: var(--primary);">Register</a>
+            </p>
+        </div>
+
+        <div class="auth-box hidden" id="register-form">
+            <h2 class="text-xl" style="margin-bottom: 1.5rem; text-align: center;">Create Account</h2>
+            <form id="registerForm">
+                <div class="input-group">
+                    <label class="label">Full Name</label>
+                    <input type="text" class="input" name="username" required placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label class="label">Email Address</label>
+                    <input type="email" class="input" name="email" required placeholder="name@company.com">
+                </div>
+                <div class="input-group">
+                    <label class="label">Password</label>
+                    <input type="password" class="input" name="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+            </form>
+            <p class="mt-4 text-center text-sm text-secondary">
+                Already have an account? <a href="#" onclick="showLogin()" style="color: var(--primary);">Login</a>
+            </p>
+        </div>
+    </div>
+
+
+    <div id="app" class="hidden">
+
+        <nav id="sidebar">
+            <div style="padding-bottom: 2rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 1rem;">
+                <h1 class="text-xl"><i class="fas fa-ticket-alt"></i> N4 Desk</h1>
+                <p class="text-sm text-secondary" id="user-role-display">User</p>
+            </div>
+
+            <a href="#" class="nav-link active" onclick="navigate('dashboard')">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="#" class="nav-link" onclick="navigate('tickets')">
+                <i class="fas fa-list"></i> All Tickets
+            </a>
+            <a href="#" class="nav-link" onclick="navigate('create-ticket')">
+                <i class="fas fa-plus-circle"></i> New Ticket
+            </a>
+
+            <div id="admin-links" class="hidden">
+                <div
+                    style="margin: 1rem 0 0.5rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); padding-left: 1rem;">
+                    Admin</div>
+                <a href="#" class="nav-link" onclick="navigate('admin-stats')">
+                    <i class="fas fa-tachometer-alt"></i> Admin Stats
+                </a>
+                <a href="#" class="nav-link" onclick="navigate('users')">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="#" class="nav-link" onclick="navigate('transcripts')">
+                    <i class="fas fa-file-archive"></i> Transcripts
+                </a>
+            </div>
+
+            <div class="settings-menu">
+                <div id="settings-dropdown" class="dropdown-content">
+                    <div class="dropdown-item" onclick="toggleTheme()">
+                        <i class="fas fa-adjust"></i> Theme Mode
+                    </div>
+                    <div class="dropdown-item" onclick="clearCache()">
+                        <i class="fas fa-sync-alt"></i> Clear Cache
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="logout()" style="color: var(--danger);">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </div>
+                </div>
+                <button class="settings-btn" onclick="toggleSettingsMenu(event)">
+                    <i class="fas fa-cog"></i>
+                    <span style="flex: 1; text-align: left;">Settings</span>
+                    <i class="fas fa-chevron-up" style="font-size: 0.7rem; opacity: 0.5;"></i>
+                </button>
+            </div>
+        </nav>
+
+       
+        <main id="main-content">
+       
+            <div id="page-content" class="fade-in"></div>
+        </main>
+    </div>
+
+    <template id="tpl-dashboard">
+        <h2 class="text-xl mb-4">Welcome back, <span id="dash-username"></span></h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Total Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-open">0</div>
+                <div class="stat-label">Open Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-closed">0</div>
+                <div class="stat-label">Closed Tickets</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3 class="text-lg mb-4">Recent Activity</h3>
+            <div id="recent-tickets-list"></div>
+        </div>
+    </template>
+
+    <template id="tpl-create-ticket">
+        <h2 class="text-xl mb-4">Create New Ticket</h2>
+        <div class="card" style="max-width: 800px;">
+            <form id="createTicketForm">
+                <div class="grid grid-cols-2 gap-4"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="input-group">
+                        <label class="label">Subject</label>
+                        <input type="text" class="input" name="subject" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="label">Category</label>
+                        <select class="input" name="category">
+                            <option>Support</option>
+                            <option>Billing</option>
+                            <option>Bug</option>
+                            <option>Feature Request</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="input-group">
+                        <label class="label">Priority</label>
+                        <select class="input" name="priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="label">Attachment (Screenshot)</label>
+                        <input type="file" class="input" name="attachment">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="label">Description</label>
+                    <textarea class="input" name="description" rows="6" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Ticket</button>
+            </form>
+        </div>
+    </template>
+
+    <template id="tpl-tickets">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl">Support Tickets</h2>
+            <div class="flex gap-2">
+                <input type="text" class="input" id="search-tickets" placeholder="Search..." oninput="loadTickets()"
+                    style="width: 200px;">
+                <button class="btn btn-sm btn-secondary"
+                    onclick="document.getElementById('filter-status').value=''; document.getElementById('search-tickets').value=''; loadTickets('me')">My
+                    Tickets</button>
+                <select class="input" id="filter-status" style="width: auto;" onchange="loadTickets()">
+                    <option value="">All Status</option>
+                    <option value="Open">Open</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+        </div>
+        <div class="card">
+            <table style="width: 100%; border-collapse: collapse; color: var(--text-secondary);">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Subject</th>
+                        <th class="p-4">Category</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4">Last Updated</th>
+                        <th class="p-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tickets-table-body">
+                 
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="tpl-ticket-view">
+        <div class="flex justify-between items-center mb-4">
+            <button class="btn btn-secondary" onclick="navigate('tickets')"><i class="fas fa-arrow-left"></i>
+                Back</button>
+            <div class="flex gap-2" id="ticket-actions">
+                
+            </div>
+        </div>
+
+        <div class="flex-col">
+          
+            <div class="ticket-header-container">
+                <div class="th-top">
+                    <div>
+                        <h1 id="tv-subject" class="th-title">Subject Line</h1>
+                        <div class="th-meta-row">
+                            <div class="th-badge"
+                                style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
+                                <i class="fas fa-tag"></i> <span id="tv-category-badge">Category</span>
+                            </div>
+                            <div class="th-badge"
+                                style="background: rgba(255,255,255,0.05); color: var(--text-secondary);">
+                                <i class="far fa-clock"></i> <span id="tv-date">Date Badge</span>
+                            </div>
+                            <span style="color:rgba(255,255,255,0.2)">|</span>
+                            <div class="flex gap-4 text-sm" style="color: var(--text-secondary); align-items: center;">
+                                <span class="flex items-center gap-2"><i class="fas fa-user-circle"></i> <span
+                                        id="tv-user" class="font-bold">User</span></span>
+                                <span class="flex items-center gap-2"><i class="fas fa-user-shield"></i>
+                                    <span>Assigned:</span> <span id="tv-assigned"
+                                        class="font-bold">Unassigned</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-col items-end gap-2">
+                        <span id="tv-id-badge" class="th-id">#1001</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-secondary font-bold uppercase">Status</span>
+                            <span id="tv-status-badge" class="badge badge-open"
+                                style="font-size: 0.9rem; padding: 0.5rem 1rem;">Open</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-secondary font-bold uppercase">Priority</span>
+                            <span id="tv-priority-badge" class="badge badge-urgent"
+                                style="font-size: 0.8rem;">High</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="th-desc-box">
+                    <p id="tv-desc" class="th-desc-text">Description content goes here...</p>
+                </div>
+
+                <div id="tv-attachment" class="mt-4"></div>
+            </div>
+
+
+            <h3 class="text-xl font-bold mb-4" style="margin-left: 0.5rem;">Conversation</h3>
+            <div class="card chat-container" id="tv-chat">
+              
+            </div>
+            <div class="chat-input-area" id="chat-input-wrapper">
+                <button class="btn btn-secondary" onclick="triggerAttachment()" title="Upload File"
+                    style="padding: 0.5rem 0.8rem; margin-right: 0.5rem;">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="file" id="new-attachment-input" style="display: none;" onchange="uploadAttachment(this)">
+
+                <textarea class="input" id="reply-message" placeholder="Type your reply..."
+                    style="box-shadow: none; border:none; background: transparent; padding: 0.5rem;"></textarea>
+                <button class="chat-send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div id="closed-message" class="text-secondary text-center hidden p-4">Ticket is Closed. Reopen to reply.
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-admin-stats">
+        <h2 class="text-xl mb-4">Admin Dashboard</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="adm-total">0</div>
+                <div class="stat-label">Total Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="adm-online">0</div>
+                <div class="stat-label">Staff Online</div>
+            </div>
+            <div class="stat-card" onclick="exportData()" style="cursor: pointer; border-color: var(--primary);">
+                <div class="stat-value"><i class="fas fa-download"></i></div>
+                <div class="stat-label">Export JSON</div>
+            </div>
+        </div>
+
+        <div class="card mt-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl">Global Ticket History</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="admin-search-tickets" class="input" placeholder="Search by ID or Subject..."
+                        onkeyup="loadAdminStats()" style="max-width: 250px;">
+                    <select id="admin-filter-status" class="input" onchange="loadAdminStats()"
+                        style="max-width: 150px;">
+                        <option value="">All Status</option>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid var(--glass-border);">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">User</th>
+                        <th class="p-4">Subject</th>
+                        <th class="p-4">Category</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-tickets-table-body">
+                    <tr>
+                        <td colspan="6" class="p-4 text-center">Loading all tickets...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="tpl-transcripts">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl">Deleted Ticket Transcripts</h2>
+            <div class="flex gap-2">
+                <input type="text" id="transcript-search" class="input" placeholder="Search transcripts..."
+                    onkeyup="filterTranscripts()" style="max-width: 250px;">
+                <button id="bulk-delete-transcripts" class="btn btn-danger hidden" onclick="bulkDeleteTranscripts()">
+                    <i class="fas fa-trash-alt"></i> Delete Selected
+                </button>
+            </div>
+        </div>
+
+        <div id="bulk-selection-info" class="bulk-action-bar hidden">
+            <span id="selected-count" class="text-sm font-bold text-blue-400">0 items selected</span>
+            <button class="btn btn-sm btn-secondary" onclick="deselectAllTranscripts()">Deselect All</button>
+        </div>
+
+        <div class="card">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid var(--glass-border);">
+                        <th class="p-4" style="width: 40px;">
+                            <input type="checkbox" id="select-all-transcripts" class="checkbox-custom"
+                                onclick="toggleSelectAllTranscripts(this)">
+                        </th>
+                        <th class="p-4">Ticket ID</th>
+                        <th class="p-4">Subject</th>
+                        <th class="p-4">Deleted By</th>
+                        <th class="p-4">Date Deleted</th>
+                        <th class="p-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="transcripts-table-body"></tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="tpl-users">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl">User Management</h2>
+            <div class="flex gap-2">
+                <input type="text" id="user-search" class="input" placeholder="Search users by name or email..."
+                    onkeyup="filterUsers()" style="max-width: 300px;">
+            </div>
+        </div>
+        <div class="card">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 1px solid var(--glass-border);">
+                        <th class="p-4">Name</th>
+                        <th class="p-4">Email</th>
+                        <th class="p-4">Role</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body"></tbody>
+            </table>
+        </div>
+    </template>
+
+    
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-icon" id="modal-icon"><i class="fas fa-info-circle"></i></div>
+            <h3 class="modal-title" id="modal-title">Title</h3>
+            <p class="modal-text" id="modal-text">Message goes here.</p>
+            <div class="modal-actions" id="modal-actions">
+            
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+
+</html>
