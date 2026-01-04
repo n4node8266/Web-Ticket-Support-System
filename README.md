@@ -30,18 +30,12 @@ A comprehensive, full-stack web-based ticketing support system built with Node.j
 
 ## Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/YOUR_USERNAME/web-ticket-system.git
-    cd web-ticket-system
-    ```
-
-2.  **Install dependencies:**
+1.  **Install dependencies:**
     ```bash
     npm install
     ```
 
-3.  **Start the server:**
+2.  **Start the server:**
     ```bash
     # For development (with nodemon)
     npm run dev
@@ -50,7 +44,7 @@ A comprehensive, full-stack web-based ticketing support system built with Node.j
     npm start
     ```
 
-4.  **Access the application:**
+3.  **Access the application:**
     Open your browser and navigate to `http://localhost:3000`.
 
 ## Directory Structure
